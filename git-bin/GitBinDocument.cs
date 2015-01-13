@@ -43,9 +43,17 @@ namespace GitBin
             return sb.ToString();
         }
 
-        public static GitBinDocument FromYaml(TextReader textReader )
-        {
-            var yaml = textReader.ReadToEnd();
+        public static GitBinDocument FromYaml(TextReader textReader ) {
+            int numchars = 9;
+            char[] startChars = new char[numchars];
+            textReader.ReadBlock(startChars, 0, numchars);
+            string start = new String(startChars);
+            if (start != "Filename:")
+            {
+                throw new YamlDotNet.Core.SyntaxErrorException();
+            }
+
+            var yaml = start + textReader.ReadToEnd();
             
             GitBinDocument document;
             var serializer = new YamlSerializer<GitBinDocument>();
@@ -56,7 +64,7 @@ namespace GitBin
             }
             catch (YamlDotNet.Core.SyntaxErrorException e)
             {
-                GitBinConsole.WriteLine("Syntax error in YAML file: {0}\n\n File contents:{1}\n", e.Message, yaml);
+                GitBinConsole.WriteLine("Syntax error in YAML file: {0}\n\n", e.Message);
                 throw;
             }
 
